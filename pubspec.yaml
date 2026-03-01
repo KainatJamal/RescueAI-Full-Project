@@ -1,0 +1,44 @@
+name: pakrescue_ai
+description: A new Flutter project for PakRescue AI
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  firebase_core: ^4.3.0
+  firebase_auth: ^6.1.3
+  cloud_firestore: ^6.1.1
+  firebase_storage: ^13.0.5
+  google_maps_flutter: ^2.6.0
+  mqtt_client: ^10.3.0
+  provider: ^6.1.2
+  http: ^1.2.0
+  image_picker: ^1.0.4
+  web_socket_channel: ^3.0.3
+  flutter_local_notifications: ^19.5.0
+  image: ^4.0.17   # ✅ Very important for bounding boxes
+  battery_plus: ^5.0.3
+  geolocator: ^10.1.0
+  permission_handler: ^11.3.1
+  flutter_map: ^6.1.0
+  latlong2: ^0.9.0
+  camera: ^0.10.5+5
+  flutter_image_compress: ^2.4.0
+dev_dependencies:
+  flutter_launcher_icons: ^0.14.4
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/RESCUEAI_LOGO_1.png
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/images/RESCUEAI_LOGO_1.png"
