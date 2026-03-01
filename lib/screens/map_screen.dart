@@ -74,17 +74,23 @@ class _MapScreenState extends State<MapScreen> {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1D37),
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0A1D37),
-        elevation: 0,
         title: const Text(
-          'Live Map',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'Live Map', // or 'Live Camera'
+          style: TextStyle(
+            color: Colors.white, // Title text color
+            fontWeight: FontWeight.bold, // Optional: bold
+            fontSize: 20, // Optional: font size
+          ),
         ),
+        backgroundColor: const Color(0xFF0A1D37), // AppBar background
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
+          color: Colors.white, // Back icon color
         ),
+        centerTitle: true, // Optional: center the title
       ),
+
       body: currentLocation == null
           ? const Center(child: CircularProgressIndicator(color: Colors.white))
           : Stack(

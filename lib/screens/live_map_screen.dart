@@ -74,14 +74,22 @@ class _LiveMapScreenState extends State<LiveMapScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0A1D37),
-
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0A1D37),
-        elevation: 0,
         title: const Text(
-          'Live GPS Tracking',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          'Live GPS Tracking', // or 'Live Camera'
+          style: TextStyle(
+            color: Colors.white, // Title text color
+            fontWeight: FontWeight.bold, // Optional: bold
+            fontSize: 20, // Optional: font size
+          ),
         ),
+        backgroundColor: const Color(0xFF0A1D37), // AppBar background
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+          color: Colors.white, // Back icon color
+        ),
+        centerTitle: true, // Optional: center the title
       ),
 
       body: currentLocation == null

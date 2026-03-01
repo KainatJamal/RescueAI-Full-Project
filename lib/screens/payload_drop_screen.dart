@@ -11,7 +11,19 @@ class PayloadDropScreen extends StatelessWidget {
       // 🔝 App Bar
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A1D37),
-        title: const Text('Payload Control'),
+        title: const Text(
+          'Payload Control',
+          style: TextStyle(
+            color: Colors.white, // Title text color
+            fontWeight: FontWeight.bold, // Optional: bold text
+            fontSize: 20, // Optional: font size
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+          color: Colors.white, // Back arrow color
+        ),
         centerTitle: true,
       ),
 

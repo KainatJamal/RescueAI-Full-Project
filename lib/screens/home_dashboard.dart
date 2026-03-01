@@ -141,12 +141,30 @@ class _HomeDashboardState extends State<HomeDashboard>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F4F8),
+      backgroundColor: const Color.fromARGB(255, 255, 255, 255),
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A1D37),
-        title: const Text('PakRescue AI'),
+        title: const Text(
+          'PakRescue AI',
+          style: TextStyle(
+            color: Colors.white, // Set text color to white
+            fontWeight: FontWeight.bold, // optional: makes it bold
+            fontSize: 20, // optional: adjust font size
+          ),
+        ),
         centerTitle: true,
-        leading: IconButton(icon: const Icon(Icons.menu), onPressed: () {}),
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: () {},
+          color: Colors.white, // Set icon color to white
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {},
+            color: Colors.white, // optional action icon in white
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

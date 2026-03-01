@@ -33,9 +33,14 @@ class _VictimScanScreenState extends State<VictimScanScreen>
 
   List<Map<String, dynamic>> detectedVictims = [];
   Uint8List? imageWithBoxes;
+  String? imageUrl; // For Azure uploaded images
 
   final String wsUrl = 'ws://192.168.100.24:8000/ws/detect';
   final String httpUrl = 'http://192.168.100.24:8000/detect';
+
+  // Azure Storage info (use these to construct image URL)
+  final String storageAccount = "victimdetections";
+  final String containerName = "victimdetections";
 
   @override
   void initState() {
@@ -66,17 +71,25 @@ class _VictimScanScreenState extends State<VictimScanScreen>
         scanning = false;
         detectedCount = data['count'] ?? 0;
         victimsDetected = detectedCount > 0;
-
         detectedVictims =
             (data['victims'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ??
             [];
       });
 
-      // ✅ DECODE ANNOTATED IMAGE FROM BACKEND
+      // ✅ Decode annotated image (base64) if backend sends it
       if (data['image'] != null) {
         final decoded = base64Decode(data['image']);
         setState(() {
           imageWithBoxes = decoded;
+          imageUrl = null; // clear network image if base64 exists
+        });
+      }
+
+      // ✅ Use Azure image URL if backend returns it
+      if (data['image_url'] != null) {
+        setState(() {
+          imageUrl = data['image_url'];
+          imageWithBoxes = null; // clear base64 image
         });
       }
 
@@ -103,6 +116,7 @@ class _VictimScanScreenState extends State<VictimScanScreen>
       detectedCount = 0;
       detectedVictims = [];
       imageWithBoxes = null;
+      imageUrl = null;
     });
 
     await sendImage(File(picked.path));
@@ -276,7 +290,7 @@ class _VictimScanScreenState extends State<VictimScanScreen>
 
           const SizedBox(height: 20),
 
-          // 🖼️ Annotated Image Display
+          // 🖼️ Annotated Image Display (either base64 or Azure URL)
           if (imageWithBoxes != null)
             Expanded(
               flex: 4,
@@ -286,6 +300,21 @@ class _VictimScanScreenState extends State<VictimScanScreen>
                   borderRadius: BorderRadius.circular(20),
                   child: Image.memory(
                     imageWithBoxes!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  ),
+                ),
+              ),
+            )
+          else if (imageUrl != null)
+            Expanded(
+              flex: 4,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Image.network(
+                    imageUrl!,
                     fit: BoxFit.cover,
                     width: double.infinity,
                   ),

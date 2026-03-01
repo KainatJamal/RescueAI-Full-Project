@@ -21,39 +21,56 @@ app = FastAPI(title="PakRescue AI – Advanced Drone Victim Detection & Tracking
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # allow all origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # ======================
-# GPU CHECK
+# LOAD ENV & DEVICE
 # ======================
+load_dotenv()
 device = "cuda" if torch.cuda.is_available() else "cpu"
 print(f"[INFO] Using device: {device}")
-load_dotenv()
 
 # ======================
 # AZURE BLOB CONFIG
 # ======================
-AZURE_CONNECTION_STRING = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
-CONTAINER_NAME = "models"
-BLOB_NAME = "yolov8n.pt"
+AZURE_CONNECTION_STRING1 = os.getenv("AZURE_STORAGE_CONNECTION_STRING1")  # Models container
+AZURE_CONNECTION_STRING2 = os.getenv("AZURE_STORAGE_CONNECTION_STRING2")  # Victim detections container
 
-# Download model from Azure Blob if not exists locally
-if not os.path.exists("yolov8n.pt"):
+MODEL_CONTAINER = "models"
+MODEL_BLOB_NAME = "yolov8n.pt"
+VICTIM_CONTAINER = "victimdetections"
+
+# Blob clients
+blob_service_client_models = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING1)
+blob_service_client_victims = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING2)
+
+model_container_client = blob_service_client_models.get_container_client(MODEL_CONTAINER)
+victim_container_client = blob_service_client_victims.get_container_client(VICTIM_CONTAINER)
+
+# Ensure victim container exists
+try:
+    victim_container_client.create_container()
+except Exception:
+    pass
+
+# ======================
+# DOWNLOAD MODEL IF MISSING
+# ======================
+if not os.path.exists(MODEL_BLOB_NAME):
     print("[INFO] Downloading YOLO model from Azure Blob Storage...")
-    blob_service_client = BlobServiceClient.from_connection_string(AZURE_CONNECTION_STRING)
-    blob_client = blob_service_client.get_blob_client(container=CONTAINER_NAME, blob=BLOB_NAME)
-    with open("yolov8n.pt", "wb") as f:
+    blob_client = model_container_client.get_blob_client(MODEL_BLOB_NAME)
+    with open(MODEL_BLOB_NAME, "wb") as f:
         f.write(blob_client.download_blob().readall())
     print("[INFO] Model downloaded successfully!")
 
 # ======================
 # LOAD YOLOv8 MODEL
 # ======================
-model = YOLO("yolov8n.pt")
+model = YOLO(MODEL_BLOB_NAME)
 model.to(device)
 print("[INFO] YOLO model loaded successfully!")
 
@@ -77,6 +94,30 @@ async def notify_clients(data):
             connected_clients.remove(ws)
 
 # ======================
+# UPLOAD DETECTIONS TO AZURE
+# ======================
+async def upload_to_azure(request_id: str, annotated_img_bytes: bytes, victims: list):
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    img_name = f"{request_id}_{timestamp}.jpg"
+    json_name = f"{request_id}_{timestamp}.json"
+
+    # Upload annotated image
+    blob_client_img = victim_container_client.get_blob_client(img_name)
+    blob_client_img.upload_blob(annotated_img_bytes, overwrite=True)
+
+    # Upload metadata
+    metadata = {
+        "request_id": request_id,
+        "timestamp": timestamp,
+        "victim_count": len(victims),
+        "victims": victims
+    }
+    blob_client_json = victim_container_client.get_blob_client(json_name)
+    blob_client_json.upload_blob(json.dumps(metadata), overwrite=True)
+
+    print(f"[INFO] Uploaded {img_name} and {json_name} to Azure Blob Storage")
+
+# ======================
 # DETECTION FUNCTION
 # ======================
 def detect_victims(img):
@@ -90,7 +131,6 @@ def detect_victims(img):
         device=device,
         verbose=False
     )
-
     victims = []
     for r in results:
         boxes = r.boxes
@@ -144,7 +184,7 @@ def draw_boxes(img, victims):
     return img
 
 # ======================
-# DETECT ENDPOINT (API)
+# DETECT ENDPOINT
 # ======================
 @app.post("/detect")
 async def detect_endpoint(file: UploadFile = File(...), request_id: str = Form(...)):
@@ -168,6 +208,9 @@ async def detect_endpoint(file: UploadFile = File(...), request_id: str = Form(.
     annotated = draw_boxes(img.copy(), victims)
     _, buffer = cv2.imencode(".jpg", annotated)
     img_base64 = base64.b64encode(buffer).decode("utf-8")
+
+    # Upload annotated image and metadata to Azure
+    await upload_to_azure(request_id, buffer.tobytes(), victims)
 
     payload = {
         "request_id": request_id,
@@ -246,4 +289,3 @@ async def websocket_tracking(ws: WebSocket):
 @app.get("/analytics")
 async def get_analytics():
     return analytics_data
-

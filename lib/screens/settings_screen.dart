@@ -12,7 +12,19 @@ class SettingsScreen extends StatelessWidget {
       // 🔝 App Bar
       appBar: AppBar(
         backgroundColor: const Color(0xFF0A1D37),
-        title: const Text('Settings'),
+        title: const Text(
+          'Settings',
+          style: TextStyle(
+            color: Colors.white, // Title text color
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+          color: Colors.white, // Back arrow color
+        ),
         centerTitle: true,
       ),
 
