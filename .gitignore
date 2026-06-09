@@ -23,6 +23,15 @@ ENV/
 # Logs
 *.log
 
+# ML / AI Models (VERY IMPORTANT for YOLO/FYP)
+*.pt
+*.onnx
+*.h5
+*.pkl
+runs/
+models/
+weights/
+
 ############################
 # 🔹 VS Code
 ############################
@@ -44,27 +53,50 @@ ENV/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
-/coverage/
+build/
+coverage/
 **/doc/api/
 **/ios/Flutter/.last_build_id
+
+# Flutter generated files
+pubspec.lock
 
 ############################
 # 🔹 Android
 ############################
-/android/app/debug
-/android/app/profile
-/android/app/release
+android/app/debug/
+android/app/profile/
+android/app/release/
+android/.gradle/
+android/build/
 
 ############################
-# 🔹 Mac
+# 🔹 iOS
+############################
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+
+############################
+# 🔹 Linux / Windows / Mac
 ############################
 .DS_Store
+Thumbs.db
+
+linux/flutter/
+windows/flutter/
+macos/flutter/
 
 ############################
-# 🔹 Windows
+# 🔹 .NET / Backend (IMPORTANT for your FYP)
 ############################
-Thumbs.db
+backend/**/bin/
+backend/**/obj/
+*.user
+*.suo
+*.cache
 
 ############################
 # 🔹 Misc
@@ -77,5 +109,3 @@ Thumbs.db
 migrate_working_dir/
 app.*.symbols
 app.*.map.json
-.env
-.env.*

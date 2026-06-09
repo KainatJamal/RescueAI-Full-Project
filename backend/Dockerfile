@@ -1,36 +1,58 @@
+# ===========================
+# Base Image
+# ===========================
 FROM python:3.10-slim
 
+# ===========================
+# Set working directory
+# ===========================
 WORKDIR /app
 
-# Prevent Python from writing .pyc files
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-
-# Install system dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-        build-essential \
-        libgl1 \
-        libglib2.0-0 \
-        curl \
-        git \
-        ca-certificates \
+# ===========================
+# Install minimal system dependencies
+# ===========================
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgl1 \
+    libglib2.0-0 \
+    gcc \
     && rm -rf /var/lib/apt/lists/*
 
+# ===========================
+# Copy all files including .env
+# ===========================
+COPY . /app
+
+# ===========================
 # Upgrade pip
+# ===========================
 RUN pip install --upgrade pip
 
-# Copy requirements first for caching
-COPY requirements.txt .
+# ===========================
+# Install CPU-only PyTorch first
+# ===========================
+RUN pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cpu
 
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# ===========================
+# Install FastAPI, Uvicorn, OpenCV, and multipart
+# ===========================
+RUN pip install fastapi uvicorn[standard] opencv-python-headless python-multipart
 
-# Copy project files
-COPY . .
+# ===========================
+# Install Ultralytics (YOLO) without dependencies
+# ===========================
+RUN pip install ultralytics[all] 
 
-# Expose port
+# ===========================
+# Install remaining dependencies used in your backend
+# ===========================
+RUN pip install azure-storage-blob python-dotenv pillow numpy
+
+# ===========================
+# Expose the port the app runs on
+# ===========================
 EXPOSE 8000
 
-# Run FastAPI
+# ===========================
+# Start the FastAPI app
+# ===========================
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

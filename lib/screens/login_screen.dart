@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter/services.dart';
+
 import 'signup_screen.dart';
 import 'home_dashboard.dart';
 
@@ -12,171 +12,253 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
-  bool _isLoading = false;
-
-  // Replace with your Azure API endpoint
-  final String _loginUrl =
-      'https://rescueaiapi20260228044254-dtdcagcbf8bah9gw.southindia-01.azurewebsites.net/api/Auth/login';
-
-  Future<void> login() async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    final response = await http.post(
-      Uri.parse(_loginUrl),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({
-        "email": _emailController.text.trim(),
-        "password": _passwordController.text.trim(),
-      }),
-    );
-
-    setState(() {
-      _isLoading = false;
-    });
-
-    if (response.statusCode == 200) {
-      // Login successful, navigate to dashboard
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const HomeDashboard()),
-      );
-    } else {
-      // Show error message
-      String errorMessage = "Login failed";
-      try {
-        final body = jsonDecode(response.body);
-        if (body['message'] != null) {
-          errorMessage = body['message'];
-        } else if (body['error'] != null) {
-          errorMessage = body['error'];
-        }
-      } catch (_) {}
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(errorMessage)));
-    }
-  }
+  bool obscurePassword = true;
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0A1D37),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 40),
+    final size = MediaQuery.of(context).size;
 
-              // Logo
-              Image.asset('assets/images/RESCUEAI_LOGO_1.png', height: 80),
-              const SizedBox(height: 20),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Color(0xFF050607),
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+      child: Scaffold(
+        backgroundColor: const Color(0xFF050607),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            physics: const BouncingScrollPhysics(),
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: size.height * 0.04),
 
-              // App Name
-              const Text(
-                'PakRescue AI',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 40),
+                /// =========================
+                /// LOGO
+                /// =========================
+                Center(
+                  child: Column(
+                    children: [
+                      Image.asset('assets/images/logo.png', width: 150),
 
-              // Email Field
-              TextField(
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
-                decoration: InputDecoration(
-                  hintText: 'Email',
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: const Icon(Icons.email),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                      const SizedBox(height: 12),
+
+                      const Text(
+                        'PakRescue AI',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+
+                      const SizedBox(height: 4),
+
+                      Text(
+                        'Smart Rescue. Faster Response.',
+                        style: TextStyle(
+                          color: Colors.white.withOpacity(0.70),
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-              const SizedBox(height: 15),
 
-              // Password Field
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  hintText: 'Password',
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: const Icon(Icons.lock),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                const SizedBox(height: 20),
+
+                /// =========================
+                /// WELCOME
+                /// =========================
+                const Text(
+                  'Welcome Back!',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 34,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-              ),
-              const SizedBox(height: 25),
 
-              // Login Button
-              SizedBox(
-                width: double.infinity,
-                height: 50,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.orange,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 6),
+
+                Text(
+                  'Sign in to continue',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.70),
+                    fontSize: 17,
+                  ),
+                ),
+
+                const SizedBox(height: 30),
+
+                /// EMAIL
+                const Text(
+                  'Email',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+
+                const SizedBox(height: 10),
+
+                _buildTextField(hint: 'youremail@example.com'),
+
+                const SizedBox(height: 25),
+
+                /// PASSWORD
+                const Text(
+                  'Password',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
+                ),
+
+                const SizedBox(height: 10),
+
+                _buildPasswordField(),
+
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: TextButton(
+                    onPressed: () {},
+                    child: const Text(
+                      'Forgot Password?',
+                      style: TextStyle(color: Color(0xFFE53935), fontSize: 14),
                     ),
                   ),
-                  child: _isLoading
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : const Text('Login', style: TextStyle(fontSize: 18)),
                 ),
-              ),
-              const SizedBox(height: 15),
 
-              // Forgot Password
-              TextButton(
-                onPressed: () {
-                  // TODO: implement forgot password
-                },
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(color: Colors.white70),
-                ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 16),
 
-              // Sign Up
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Don't have an account?",
-                    style: TextStyle(color: Colors.white70),
-                  ),
-                  TextButton(
+                /// =========================
+                /// SIGN IN BUTTON → HOME DASHBOARD
+                /// =========================
+                SizedBox(
+                  width: double.infinity,
+                  height: 58,
+                  child: ElevatedButton(
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => const SignUpScreen()),
+                        MaterialPageRoute(
+                          builder: (context) => const HomeDashboardScreen(),
+                        ),
                       );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFD62828),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
                     child: const Text(
-                      'Sign Up',
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      'Sign In',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
-                ],
-              ),
-              const SizedBox(height: 30),
-            ],
+                ),
+
+                const SizedBox(height: 25),
+
+                /// =========================
+                /// SIGN UP (FIXED CLICKABLE TEXT)
+                /// =========================
+                Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const SignupScreen(),
+                        ),
+                      );
+                    },
+                    child: RichText(
+                      text: TextSpan(
+                        children: [
+                          TextSpan(
+                            text: "Don't have an account? ",
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.70),
+                              fontSize: 16,
+                            ),
+                          ),
+                          const TextSpan(
+                            text: 'Sign Up',
+                            style: TextStyle(
+                              color: Color(0xFFE53935),
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(height: 28),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// =========================
+  /// EMAIL FIELD
+  /// =========================
+  Widget _buildTextField({required String hint}) {
+    return Container(
+      height: 62,
+      decoration: BoxDecoration(
+        color: const Color(0xFF11151B),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: TextField(
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 18),
+        ),
+      ),
+    );
+  }
+
+  /// =========================
+  /// PASSWORD FIELD
+  /// =========================
+  Widget _buildPasswordField() {
+    return Container(
+      height: 62,
+      decoration: BoxDecoration(
+        color: const Color(0xFF11151B),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: TextField(
+        obscureText: obscurePassword,
+        style: const TextStyle(color: Colors.white),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          hintText: '••••••••••',
+          hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 18),
+          suffixIcon: IconButton(
+            onPressed: () {
+              setState(() {
+                obscurePassword = !obscurePassword;
+              });
+            },
+            icon: Icon(
+              obscurePassword ? Icons.visibility : Icons.visibility_off,
+              color: Colors.white70,
+            ),
           ),
         ),
       ),

@@ -31,7 +31,7 @@ app.add_middleware(
 # LOAD ENV & DEVICE
 # ======================
 load_dotenv()
-device = "cuda" if torch.cuda.is_available() else "cpu"
+device = "cpu"
 print(f"[INFO] Using device: {device}")
 
 # ======================

@@ -27,6 +27,8 @@ dependencies:
   latlong2: ^0.9.0
   camera: ^0.10.5+5
   flutter_image_compress: ^2.4.0
+  google_fonts: ^5.0.0
+
 dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   flutter_test:
@@ -36,9 +38,14 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/RESCUEAI_LOGO_1.png
-
+    - assets/images/background.png
+    - assets/images/logo.png
+    - assets/images/welcome_bg.png
+    - assets/images/welcome_bg.png
+    - assets/images/welcome_bg2.png
+    - assets/images/welcome_bg3.png
+    - assets/images/welcome_bg4.png
 flutter_icons:
   android: true
   ios: true
-  image_path: "assets/images/RESCUEAI_LOGO_1.png"
+  image_path: "assets/images/logo.png"
